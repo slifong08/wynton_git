@@ -1,1 +1,2 @@
-# wynton_dev
+# wynton_git
+# private git to backup wynton scripts
