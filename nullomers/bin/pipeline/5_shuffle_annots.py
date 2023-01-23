@@ -46,6 +46,51 @@ QSUB = "/wynton/home/ahituv/fongsl/tools/qsub/shuf_nullomer-w_config.sh"
 
 # # functions 
 
+def expand_bedcoor(bedfile, nbases):
+    """
+    write expanded bedcoordinates file. 
+    
+    inputs
+        bedfile (str) - full path to bed file to expand
+        nbases (int) - number of bases to expand by IN EACH DIRECTION
+        
+    method
+        
+        1. build outfile str
+        2. make pybedtool object (if outfile does not exist, else skip)
+        3. use bedtools slop to expand bed coordinates, save output
+        4. unit test expansion
+        
+    returns
+    
+        outbed (str) - full path to expanded coordinate bedfile
+    """
+    
+    #1
+    out = bedfile.strip(".bed") + f"-EXPANDED-{nbases}.bed"
+    
+    if os.path.exists(out) is False:
+        #2
+        bed = pbt.BedTool(bedfile)
+
+        #3
+        expanded = bed.slop(genome="hg38", b=nbases, output=out)
+        
+    else:
+        print("expanded", nbases, " in either direction, already")
+
+    #4
+    with open(bedfile, "r") as file:
+        for line in file:
+            print("original", line)
+            break  # only print the first original line in the file
+            
+    with open(out, "r") as ex:
+        for line in ex:
+            print("expanded", line) 
+            break  # only print he first expanded line in the file
+    
+    return out
 
 def makeBkgdExclusion(data_path, build, gencode, rmsk):
     
@@ -120,6 +165,7 @@ def writeShuffleConfig(bed, iters, build, outpath, incl, section, annotation):
     
     return configfile_name
 
+
 def shuffle(config, section, cmd):
     
         
@@ -148,6 +194,7 @@ def shuffle(config, section, cmd):
         print(" ".join(["qsub", cmd, config, section]))
         subprocess.run(["qsub", cmd, config, section], stdout=subprocess.PIPE)
 
+        
 def main(argv):
     
     # get RMSK.bed, write noncoding background exclusion file. 
@@ -182,6 +229,15 @@ def main(argv):
     config["SHUFFLE"]["NOEX_EXP_STAR"] = os.path.join(SHUFFLE_PATH, "shuf-" + (GENCODE_NOOVERLAP.split("/")[-1]).strip(".bed") +"-*.bed")     
     
     # run shuffles
+    
+    #### STOPPED HERE #### NEED TO EXPAND EXON, NON-EXON, then do shuffles. 
+    #1 expand bed coordinates
+    print("expanding", BED, "n bases", NBASES)
+
+    outex = expand_bedcoor(BED, int(NBASES))
+
+    print("EXPANDED", outex)
+    
     shuffle(shuf_config, "OVERLAP", PY)
     shuffle(shuf_config, "NO-OVERLAP", PY)
     

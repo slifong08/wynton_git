@@ -25,6 +25,7 @@ ANNOTATION = sys.argv[1]
 DATA_PATH = sys.argv[2]
 MUTATIONS = sys.argv[3]
 BUILD = sys.argv[4]
+FLANK = sys.argv[5]
 
 # import config reader/writer
 import config_readwrite as crw
@@ -79,6 +80,7 @@ def main(argv):
     config["DATA"]["BUILD"] = BUILD
     config["DATA"]["PATH"] = DATA_PATH
     config["DATA"]["MUTATIONS"] = MUTATIONS
+    config["DATA"]["FLANK"] = FLANK
     
         
     config["GENCODE"]["ANNOT"] = ANNOTATION
