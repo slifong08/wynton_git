@@ -1,0 +1,34 @@
+### Reviewer comment 2.3 ###
+
+3. The homology and functional consistency of cross-species genes need to be supported by sufficient data, especially the homology and **functional** consistency of protein-coding genes in the collinear regions of human and bat genomes needs to be proved.
+
+### Sarah's write up ###
+
+# methods 
+    TOGA one-to-one ortholog, transcript, and gene coordinate predictions were downloaded from https://genome.senckenberg.de//download/TOGA/human_hg38_reference/Chiroptera/ for eptFus1 and artJam2 (last downloaded July 1st, 2023). With differentially expressed genes we identified in bat kidneys and pancreas, we evaluated how many had at least one one-to-one TOGA ortholog prediction between humans and the bat species. For transcript predictions, we asked how many of the differentially expressed genes were predicted to have at least one intact or partially intact gene transcript. For genes coordinates, we mapped predictions from the annotated chain to its paired scaffold. 
+
+# results
+The gene orthology across multiple bat species’ has previously been explored using TOGA (Blumer 2022, Kirilenko 2023), a machine learning model that leverages high quality reference gene annotations (such as those from mouse and human) and co-linear chain alignments between reference and query species to predict gene orthologs in the query species. For homology, TOGA can classify one-to-one, one-to-many, and many-to-many ortholog predictions. For functionality, TOGA classifies query species gene transcripts as intact, partially intact, missing, uncertain loss, lost, or paralogous. To reinforce the gene orthology and functionality supporting our work, we evaluated the TOGA predictions of artJam2 or eptFus1 bat gene orthologs using either hg38 and mm10 reference gene annotations. TOGA predicts the gene orthology at the transcript level, which supports that the functional conservation of a gene.
+
+To support pancreatic and kidney differentially expressed gene homology, we evaluated the frequency of one-to-one TOGA homolog predictions between humans and insectivore (EptFus1) or frugivore bats (ArtJam2). For differentially expressed pancreatic genes (N=4765; Figure SX), TOGA made ortholog predictions for 4650 human genes (98% of differentially expressed pancreatic genes). Among insectavores and frugivores, 4548 and 4547 genes were predicted to have one-to-one bat orthologs, respectively (~98% of differentially expressed pancreatic genes with TOGA predictions). Similarly among differentially expressed kidney genes (N=4132), TOGA made ortholog predictions for 4034 human genes (98% of differentially expressed kidney genes). In insectavores and frugivores, 3947 genes were predicted to have one-to-one-orthologs (98% of differentially expressed kidney genes with TOGA predictions). Together, this supports that our gene annotation are homologous and consistent between human and bat genomes.
+
+To support the functional consistency of these TOGA ortholog predictions, we evaluated how often TOGA predicted differentially expressed ortholog transcripts were predicted to be intact or partially intact. We observe that between 95-96% of differentially expressed gene orthologs in human had at least 1 predicted intact/partially intact transcript in bats. These TOGA predictions support that the majority of differentially expressed genes and their transcripts are predicted to have one-to-one orthologs and intact transcripts between humans and bats. 
+
+Sarah's recommendation: 
+- Double check that genes discussed in results section fall in the list of predicted orthologs. 
+
+
+### Reviewer comment 2.5 ###
+
+# methods
+We converted peaks from hg38 back to the bat genomes using liftOver. For gene orthologs, we mapped the TOGA-predicted gene ortholog annotation coordinates to eptFus1 or artJam2 scaffolds. To find the nearest upstream and downstream genes for each bat peak, we used bedtools closest function with the following argument: "'[-fu|-fd]' -D 'a'" where -fu reports the nearest gene upstream a bat peak, -fd reports the nearst downstream gene, and "-D 'a'" provides the distance in reference to the peak dataset. We performed the bedtools closest function for upstream and downstream genes separately. We asked how many peak-nearest gene pairs were the same between human and bat species. 
+
+# results
+In frugivorous bats, 63% of kidney (72055/113759) and 63% of pancreas (106230/167772) had one nearest gene that mirrored the nearest gene in humans. In brown bats, 59% of kidney peaks (82939/139822) and 59% of pancreas peaks (64354/109751) had one nearest gene that mirrored the  nearest gene in humans. None of the bat peaks shared both upstream and downstream nearest genes found in the human genome in any dataset, and we speculate that the scaffold-nature of the bat genome assembly prevents us from thoroughly evaluating synteny. 
+
+Sarah's recommendation:
+- scrap the GREAT analysis 
+- run gene ontology on the peaks that I have mapped to gene orthologs. At least you have a list of nearest genes linked to these peaks, you know they agree with human, and that they are interpretable. 
+
+# send liftOver from bat ->hu, hu-> bat 0.1
+# send peaks + closest genes (human-matched + full) 

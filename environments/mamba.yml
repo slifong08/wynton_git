@@ -83,6 +83,7 @@ dependencies:
   - gdbm=1.18=hd4cb3f1_4
   - gettext=0.21.1=h27087fc_0
   - gflags=2.2.2=he1b5a44_1004
+  - gh=2.33.0=ha8f183a_0
   - glib=2.76.3=hfc55251_0
   - glib-tools=2.76.3=hfc55251_0
   - glog=0.6.0=h6f12383_0
