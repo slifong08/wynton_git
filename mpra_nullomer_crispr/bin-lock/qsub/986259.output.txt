@@ -1,0 +1,40 @@
+Thu Aug 10 16:32:49 PDT 2023
+qb3-id233
+python3: can't open file '/wynton/home/ahituv/fongsl/nullomers/bin-lock/fimo.py': [Errno 2] No such file or directory
+==============================================================
+job_number:                 986259
+exec_file:                  job_scripts/986259
+submission_time:            Thu Aug 10 16:32:28 2023
+owner:                      fongsl
+uid:                        61815
+group:                      ahituv
+gid:                        47000
+sge_o_home:                 /wynton/home/ahituv/fongsl
+sge_o_log_name:             fongsl
+sge_o_path:                 /wynton/home/ahituv/fongsl/.conda/envs/mamba/bin:/wynton/home/ahituv/fongsl/bin/meme-5.5.1/bin:/wynton/home/ahituv/fongsl/meme/libexec/meme-5.5.1:/wynton/home/cbi/shared/software/CBI/miniconda3-23.3.1-0-py39/condabin:/wynton/home/cbi/shared/software/CBI/miniconda3-23.3.1-0-py39/bin:/opt/sge/bin:/opt/sge/bin/lx-amd64:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/wynton/home/ahituv/fongsl/.local/bin:/wynton/home/ahituv/fongsl/bin:/wynton/home/ahituv/fongsl/bin/bcftools-1.16:/wynton/home/ahituv/fongsl/bin/ucsc_exe:/wynton/home/ahituv/fongsl/for_hai/bin:/wynton/home/ahituv/fongsl/bin/sratoolkit.3.0.2-ubuntu64/bin:/wynton/home/ahituv/fongsl/bin/bwa:/wynton/home/ahituv/fongsl/bin/bowtie:/wynton/home/ahituv/fongsl/bin/argtable2:/wynton/home/ahituv/fongsl/bin/clustal-omega-1.2.4
+sge_o_shell:                /bin/bash
+sge_o_workdir:              /wynton/home/ahituv/fongsl/EMF/US/bin
+sge_o_host:                 dev2
+account:                    sge
+cwd:                        /wynton/home/ahituv/fongsl/EMF/US/bin
+stderr_path_list:           NONE:NONE:/wynton/home/ahituv/fongsl/nullomers/bin-lock/qsub/$JOB_ID.error.txt
+merge:                      y
+hard resource_list:         rocky8=false,h_vmem=15G,mem_free=15G,scratch=15G,h_rt=8100
+mail_options:               ae
+mail_list:                  sarah.fong@ucsf.edu
+notify:                     FALSE
+job_name:                   fimo.sh
+stdout_path_list:           NONE:NONE:/wynton/home/ahituv/fongsl/nullomers/bin-lock/qsub/$JOB_ID.output.txt
+jobshare:                   0
+hard_queue_list:            !*gpu.q
+restart:                    y
+shell_list:                 NONE:/bin/bash
+env_list:                   TERM=NONE
+job_args:                   /wynton/home/ahituv/fongsl/EMF/US/data/ultrasound_final_no_adapter.fasta,/wynton/home/ahituv/fongsl/EMF/US/bin/config.ini
+script_file:                /wynton/home/ahituv/fongsl/nullomers/bin-lock/fimo/fimo.sh
+project:                    genetics
+binding:                    NONE
+job_type:                   NONE
+usage         1:            cpu=00:00:00, mem=0.00034 GB s, io=0.00405 GB, vmem=8.098M, maxvmem=8.098M
+binding       1:            NONE
+scheduling info:            (Collecting of scheduler job information is turned off)
