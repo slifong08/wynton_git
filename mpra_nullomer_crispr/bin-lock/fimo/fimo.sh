@@ -31,7 +31,7 @@
 date
 hostname
 
-source activate /wynton/home/ahituv/fongsl/.conda/envs/meme # environment
+source activate /wynton/home/ahituv/fongsl/.conda/envs/mamba # environment
 
 python3 /wynton/home/ahituv/fongsl/nullomers/bin-lock/fimo/fimo.py "$1" "$2"  # ORDER OF ARGS MATTERS
 # $SGE_TASK_ID = chrnum

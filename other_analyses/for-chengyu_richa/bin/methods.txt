@@ -1,0 +1,7 @@
+# Data clean-up and batch normalization
+
+MPRA activity of two libraries (5K and 40K) were measured in three GABA and three GLUT differentiated neurons. To compare activity  within and between sequences, we first prepared the data. We excluded any sequence that had fewer than 10 barcodes per sequence. Per replicate, we batch-normalized MPRA activity scores by centering, or subtracting, the median of the shuffled activity distribution from each sequence score. We chose to center values to the shuffled distribution median because we hypothesize that shuffled datasets should have truly neutral activity; any variation between shuffled sequences in replicates could then be attributed to batch effects. We did not observe any strong batch effects on the shuffled MPRA activity values after correction; shuffle log2 activity distributions are not statistically significantly different between replicates (GABA Kruskal-Wallis p=0.91, GLUT Kruskal-Wallis p=0.99). 
+
+# Computing cell-type-specific activity
+
+To summarize activity scores per cell type, we computed the mean log2 activity score across three replicates within a cell type. We quantified cell-type-specific activity as the differences between GABA and GLUT scores (GABA activity - GLUT activity) for each sequence. To determine the most GABA-specific and GLUT-specific activities, we ranked activity differences from very negative (GLUT-specific) to very positive (GABA-specific). 
