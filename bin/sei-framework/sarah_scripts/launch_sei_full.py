@@ -11,48 +11,66 @@ CFN = sys.argv[2]
 # functions
 
 def getHandles(fasta):
-    """make a dictionary of all the output handles for one fasta file sei run"""
+    """make a dictionary of all the output handles 
+        for one fasta file sei run
+        make output dir
+    """
     
     SEI_SRC = "/wynton/home/ahituv/fongsl/bin/sei-framework/"
     SEI_PATH = os.path.join(os.path.split(fasta)[0], "sei_predictions")
+    SEI_CLASS_LABELS = os.path.join(SEI_SRC, "sequence_class_labels.csv")
+    SEI_CHROM_LABELS = os.path.join(SEI_SRC, "seq_prediction_columns.txt")
 
-    FASTA_CLEAN = os.path.splitext(fasta)[0] + ".clean.fa"
+    FASTA_PATH = os.path.split(fasta)[0]
+    FASTA_HANDLE = os.path.splitext(os.path.split(fasta)[1])[0]
+    FASTA_CLEAN = os.path.join(FASTA_PATH, FASTA_HANDLE + ".clean.fa")
     FASTA_INDEX =  os.path.splitext(FASTA_CLEAN)[0] + ".index.txt"
     
-    PADDED  = os.path.splitext(FASTA_CLEAN)[0] + ".sei_padded.fa"
-    PATH, HANDLE = os.path.split(PADDED)
-    HANDLE = HANDLE.strip(".fa")
+    PADDED  = os.path.join(FASTA_PATH, os.path.splitext(os.path.split(FASTA_CLEAN)[1])[0] + ".sei_padded.fa")
+    PADDED_PATH, PADDED_HANDLE = os.path.split(PADDED)
+    PADDED_HANDLE = PADDED_HANDLE.strip(".fa")
     
     
     CHROM_PATH= os.path.join(
         SEI_PATH, "chromatin-profiles-hdf5")
     
-    CHROM_OUT = os.path.join(CHROM_PATH, f"{HANDLE}_predictions.h5")
-    CLASS_OUT = os.path.join(CHROM_PATH, f"{HANDLE}.raw_sequence_class_scores.npy")
-    LABEL_OUT = os.path.join(CHROM_PATH, f"{HANDLE}_row_labels.txt")
-    CLASS_TABLE = os.path.join(CHROM_PATH, f"{HANDLE}.raw_sequence_class_scores.table.tsv.gz")
+    CHROM_OUT = os.path.join(CHROM_PATH, f"{PADDED_HANDLE}_predictions.h5")
+    CLASS_OUT = os.path.join(CHROM_PATH, f"{PADDED_HANDLE}.raw_sequence_class_scores.npy")
+    LABEL_OUT = os.path.join(CHROM_PATH, f"{PADDED_HANDLE}_row_labels.txt")
+    CLASS_TABLE = os.path.join(CHROM_PATH, f"{PADDED_HANDLE}.raw_sequence_class_scores.table.tsv.gz")
     
     
     path_dict = {
         "FASTA": fasta,
+        "FASTA_HANDLE":FASTA_HANDLE,
         "FASTA_CLEAN":FASTA_CLEAN, 
         "FASTA_INDEX":FASTA_INDEX,
+        
         "PADDED":PADDED, 
-        "PATH": PATH,
-        "HANDLE":HANDLE, 
+        "PADDED_PATH": PADDED_PATH,
+        "PADDED_HANDLE":PADDED_HANDLE, 
+        
         "SEI_PATH":SEI_PATH, 
         "SEI_SRC":SEI_SRC,
+        "SEI_CHROM_LABELS":SEI_CHROM_LABELS,
+        "SEI_CLASS_LABELS":SEI_CLASS_LABELS,
+        
         "CHROM_PATH": CHROM_PATH, 
         "CHROM_PRED": CHROM_OUT,
+        
         "CLASS_PRED" : CLASS_OUT, 
         "LABELS" : LABEL_OUT, 
         "CLASS_TABLE":CLASS_TABLE
+        
     }
     
+    if os.path.exists(SEI_PATH) is False:
+        os.mkdir(SEI_PATH)
+        
     return path_dict
 
 
-def cleanFasta(fasta):
+def cleanFasta(fasta, config):
     """
     clean fasta files for sei run by indexing sequence ids
     
@@ -69,7 +87,6 @@ def cleanFasta(fasta):
         path_dict (dictionary) - dictionary with files
 
     method    
-        1. get dictionary of file handles
         2. instantiate fasta clean adn index handles to write
         3. open files to write
         4. make empty list to collect unique sequence ids
@@ -84,11 +101,9 @@ def cleanFasta(fasta):
     """
     print("clean and index fasta")
     
-    #1
-    path_dict = getHandles(fasta)
-    
+
     #2 get files (strs) to write
-    FASTA_CLEAN, FASTA_INDEX = path_dict["FASTA_CLEAN"], path_dict["FASTA_INDEX"]
+    FASTA_CLEAN, FASTA_INDEX = config["sei"]["FASTA_CLEAN"], config["sei"]["FASTA_INDEX"]
     
     if os.path.exists(FASTA_CLEAN) is False:
         #3 open the write files
@@ -155,32 +170,38 @@ def trimSeq(seq, size):
     return seq[start:end]
 
 
-def padSeq(fasta):
+def padSeq(fasta, config):
     
     """ if sequence is shorter than 4096, pad, else trim"""
     
     print("padding/trimming clean fasta to 4096bp")
-    
-    # get handles
-    path_dict = getHandles(fasta)
-    
+
     # set paramters, pad with Ns
-    max_len, PAD = 4096, "N"
+    MAX_LEN, PAD = 4096, "N"
+
+    # infile
+    # CLEAN_FASTA = config["sei"]["CLEAN_FASTA"]
     
     # out file - padded and clean
-    OUT = path_dict["PADDED"]
+    OUT = config["sei"]["PADDED"]
     
     if os.path.exists(OUT) is False:
+        
         sequences = [s for s in SeqIO.parse(fasta, 'fasta')]
 
         padded_sequences = []
 
         for n, seq in enumerate(sequences):
-            if len(seq.seq)<max_len:
-                padding = PAD*max_len # creating the padding string
-                padded_sequences.append(seqInsert(padding, None, seq)) # insert the sequence in the center, append to list
+            if len(seq.seq)<MAX_LEN:
+
+                padding = PAD*MAX_LEN # creating the padding string
+
+                # insert the sequence in the center, append to list
+                padded_sequences.append(seqInsert(padding, None, seq)) 
+                
             else:
-                padded_sequences.append(trimSeq(seq, max_len))
+                padded_sequences.append(trimSeq(seq, MAX_LEN))
+                
         SeqIO.write(padded_sequences, OUT, 'fasta')  # write all the sequences
     else:
         print("padded/trimmed already", OUT)
@@ -188,20 +209,17 @@ def padSeq(fasta):
     return OUT
 
 
-def launchSei(fasta, build, gpu):
+def launchSei(fasta, build, gpu, config):
 
     print("launching sei")
+
+    # in
+    SEI_SRC = config["sei"]["SEI_SRC"]
+    SEI_PATH = config["sei"]["SEI_PATH"]
     
-    path_dict = getHandles(fasta)
-    
-    SEI_SRC = path_dict["SEI_SRC"]
-    SEI_PATH = path_dict["SEI_PATH"]
-    
-    CHROM_PRED = path_dict["CHROM_PRED"]
-    CLASS_PRED = path_dict["CLASS_PRED"]
-    
-    if os.path.exists(SEI_PATH) is False:
-        os.mkdir(SEI_PATH)
+    # out
+    CHROM_PRED = config["sei"]["CHROM_PRED"]
+    CLASS_PRED = config["sei"]["CLASS_PRED"]
         
     print(SEI_PATH, "\n", CLASS_PRED)
 
@@ -225,6 +243,7 @@ def launchSei(fasta, build, gpu):
         print('ran sei already', CLASS_PRED)
 
 def returnSequenceClassLabels():
+    
     file = "/wynton/home/ahituv/fongsl/bin/sei-framework/sequence_class_labels.csv"
     lab = pd.read_csv(file)
 
@@ -283,24 +302,27 @@ def main(argv):
     # load config
     config, cfn = crw.read(CFN)
     
-    FASTA_CLEAN, FASTA_INDEX = cleanFasta(FASTA)
-    
-    # sequence padding w n
-    PADDED_FASTA = padSeq(FASTA_CLEAN)
-
-    # launch sei
-    GPU = True
-    launchSei(PADDED_FASTA, "hg38", GPU)  
-    
     # write to config
     path_dict = getHandles(FASTA)
     
     SECTION = "sei"
+    crw.check(config, SECTION)
+    
     for key, value in path_dict.items():
         config[SECTION][key] = value
-
     crw.write(config, cfn)
+    
+    # clean the fasta
+    FASTA_CLEAN, FASTA_INDEX = cleanFasta(FASTA, config)
+    
+    # sequence padding w Ns, or trim sequences
+    PADDED_FASTA = padSeq(FASTA_CLEAN, config)
 
+    # launch sei
+    GPU = True
+    launchSei(PADDED_FASTA, "hg38", GPU, config)  
+    
+    
     """
     # get sequence class labels. See Methods section of Chen 2022 for interpretation of these PC labels.
     # apparently labels >40 are low active/heterochromatin. 

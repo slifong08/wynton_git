@@ -22,7 +22,7 @@ OUTDIR, SAMPLE_NAME = os.path.split(FA)
 SAMPLE_ID= os.path.splitext(SAMPLE_NAME)[0]
 
 # FILE CONSTANTS
-FIMO_SRC = "/wynton/home/ahituv/fongsl/bin/meme-5.5.1/src/fimo"
+FIMO_SRC = "/wynton/group/ahituv/bin/meme-5.5.1/src/fimo"
 JASPAR = "/wynton/group/ahituv/tfbs_motif/jaspar/JASPAR2022_CORE_non-redundant_pfms_meme.txt"
 
 # write to config
