@@ -1,0 +1,191 @@
+# 20231103
+# SarahFong
+
+
+# Goal
+
+    My goal is to identify MPRA tiles with strong differential activity between two cell types - glutamatergic neurons (GLUT) and GABAergic neurons (GABA) differentiated from iPSCs. Two libraries were tested in these cell types. The first library contained ~5K tiled sequences with a 20bp offset, reflecting 2.5K regions tested in the forward and reverse orientation. These elements were identified from a combination of human and mouse genomic and biochemical assays. The second library contained ~40K sequences with a 20bp offset, reflecting thousands of elements. 
+
+###
+# LIBRARY 2
+###
+
+# FASTA- Deconvolving sample annotations from library fasta file. 
+    The sample annotations in the 5K dataset are easy to parse, but this is not true of the 40K dataset. Instead, the 40K dataset (N=44044 tiles) includes many different hypotheses about background sequences, positive controls, shuffles, and synthetic sequences with motifs inserted in specific positions. To deconvolve the original information about these sequences, I performed string splitting to clean up the metadata annotations for this dataset. This count uses the design fasta file ("biomarin-lib2-hg38-final.fasta"), which reflect the number of input sequences to the MPRA, but does not guarantee that all these sequences were tested. 
+    
+    Genomic loci (N=42176) 
+    
+    Shuffled controls (N=209) from random elements including: 
+    - 200 regular shuffled annotations (e.g. shuffle_1_chr11:113201038-113201308, shuffle_2_chr6:15987563-15987833, shuffle_3_chr11:45289093-45289363, shuffle_4_chr11:45243850-45244120 ... etc.) 
+    
+    Irregular annotations N=9 
+       - N=1 Positive-shuffle35_chr12:44015386-44015655:+,
+       - N=6 Negative-shuffle116_chr2:171661323-171661592:+, Negative-shuffle137_chr12:44592567-44592836:+,
+           Negative-shuffle46_chr18:59505340-59505609:+, Negative-shuffle157_chr18:59505385-59505654:-, 
+           Negative-shuffle54_chr1:162285559-162285828:+, Negative-shuffle39_chr2:170816640-170816909:+, 
+
+       - N=2 Negative-GLUT_shuffle30_chr2:199552111-199552380:-, 
+           Negative-GLUT_shuffle163_chr2:172234903-172235172:-) 
+
+    Negative controls (N=237) for: 
+    - random loci (N=147)
+    - GABA-specific (N=38, e.g. Negative-GABA_chr10:26471819-26472088:+)
+    - GLUT-specific (N=37, e.g. Negative-GLUT_chr2:170816475-170816744:-)
+    - random loci w/o coordinate or strand information (N=9, "Negative-72hr_top_107", of which 8/9 contain "72h_top" and 1/9 contains "72h_bottom"). 
+    
+    Positive controls (N=135) for:
+    - random loci (N=45, e.g. Positive-chr10:26798814-26799083:-)
+    - GLUT (N=43, e.g.Positive-GLUT_chr3:35859400-35859669:+). None of these are top/bottom_72h annotated. 
+    - GABA (N=46, e.g. Positive-GABA_72hr_top_60, Positive-GABA_chr7:31335151-31335420:+). 
+        - Of these 8/46 are "72h_top" annotated and 1/46 is "72h_bottom" annotated
+        
+    "Background" sequences (N=1296)
+    - Background seq1 (N=648) has insertions of gaba, glut, or gaba and glut motifs in 1-4 positions
+        template sequence = "Background seq1 72hr_top_98"
+        e.g. 
+            Background seq1 72hr_top_98|Pos:135|Motif family:glut motif 2|Motif:AAACACATAAGG
+            Background seq1 72hr_top_98|Pos:115,155|Motif family:glut motif 2|Motif:AAACACATAAGG
+            Background seq1 72hr_top_98|Pos:105,135,165|Motif family:glut motif 2|Motif:AAACACATAAGG
+            Background seq1 72hr_top_98|Pos:105,125,145,165|Motif family:glut motif 2|Motif:AAACACATAAG
+            
+     - Background seq2 (N=648 has insertions of gaba, glut, or gaba and glut motifs in 1-4 positions
+         template sequence = "chr1:244100624-244100893:+"
+         e.g. 
+            Background seq2 chr1:244100624-244100893:+|Pos:135|Motif family:glut motif 1|Motif:TGAACTGATAGA
+            Background seq2 chr1:244100624-244100893:+|Pos:115,155|Motif family:glut motif 1|Motif:TGAACTGATAGA
+            Background seq2 chr1:244100624-244100893:+|Pos:105,135,165|Motif family:glut motif 1|Motif:TGAACTGATAGA
+            Background seq2 chr1:244100624-244100893:+|Pos:105,125,145,165|Motif family:glut motif 1|Motif:TGAACTGATAGA
+
+# Metadata annotation - "lib2.meta_data.tsv"
+    For input library tiles, I annotated meta data for each tile including:
+    
+        genomic coordinates: #chr (str), start (int), end (int)
+        bkgd: (bool) Is synthetic sequence with inserted motifs
+        h: (str) 172h or 72h annotation
+        ctrl: (str) positive, negative, shuffle, or synthetic sequence
+        cl: (str) GABA or GLUT
+        top_bottom: (str) top or bottom annotation 
+        coor: genomic coordinates in UCSC ready format, but zero-indexed instead of one-indexed. 
+        strand: if strand information provided, "+" or "-"
+
+
+# recovering enhancer loci from tiling library data - 
+    tiles:'lib2.processed.bed'
+    tiles + enhancers: 'lib2.processed.merged.bed'
+    
+    Because elements are broken up into tiles with 20bp offsets, I will perform a bedtools sort and merge to recover contiguous tiles within a candidate enhancer. From the original input library, I turned the tiles into enhancer loci by merging coordinates together requiring they were 1bp adjacent. This resulted in N=1827 genomic loci. I then merged the tile and enhancer information together, sorted by enhancer and genomic coordinate, and labeled the tile order for each enhancer from 1-n. For positive strands, this order is fine. For negative strands, the tile order should be interpreted in reverse. 
+    
+# MPRA data
+    Of the original library, 35371/44044 (80%) tiles had measureable MPRA activity scores with > 10 barcode reads. The delta score in this file reflects the mean log2(gaba) score minus the mean log2(glut) score across three replicates per gaba/glut. These are not standardized, but scores were centered to the median shuffled distribution per replicate before computing the mean score for each sequence. 
+
+    Summary stats: 
+        mpra["delta"].describe()
+
+        count    35371.000000
+        mean        -0.023292
+        std          0.442305
+        min         -2.069465
+        25%         -0.325397
+        50%          0.043795
+        75%          0.324542
+        max          1.319865
+
+
+# GREAT two-nearest genes analysis. 
+    To place tiles and enhancers nearby the closest two genes, upstream and downstream each tile, I performed a GREAT analysis identifying these genes. I required that nearest gene TSSs are within 1Mb up or downstream the tile. Then, I formatted the GREAT analysis to create a dataframe of each gene and all the tiles nearest that gene, including SYNGAP1 and SLC6A1.
+
+
+# MPRA activity
+    For each of the three GLUT replicates and three GABA replicates, I filtered out any sequences that did not have more than 9 barcodes (N=16842 glut, N=14906 gaba), then computed the median MPRA ratio from the shuffled distribution and centered all MPRA activity values in the replicate using that median shuffled value. Evaluating the standard deviations for each of the replicates and within subgroups, it appears that the standard deviation is comparable. I removed any sequences where we did not have triplicate data (e.g. triplicate sweep below). This removed 1104 sequences from the glut and 643 sequences from gaba. After this clean up, N=35371 sequences with sufficient reads in both gaba and glut cell types. 
+
+    (124933, 19) (108091, 19) removed tags w/ <10 barcodes N= 16842
+    glut 
+
+     before centering 
+
+             ctrl sample_id    count       50%       std
+    0   negative    glut_1    205.0 -0.926792  0.304968
+    1   negative    glut_2    207.0 -0.791800  0.258853
+    2   negative    glut_3    205.0 -0.819396  0.298338
+    3   positive    glut_1    127.0  0.169232  0.207915
+    4   positive    glut_2    127.0  0.133671  0.202995
+    5   positive    glut_3    127.0  0.112909  0.242676
+    6    shuffle    glut_1    179.0 -0.242330  0.367824
+    7    shuffle    glut_2    183.0 -0.210841  0.388767
+    8    shuffle    glut_3    178.0 -0.245015  0.401547
+    9       test    glut_1  35637.0 -0.085978  0.465378
+    10      test    glut_2  35599.0 -0.082256  0.424445
+    11      test    glut_3  35317.0 -0.093941  0.449810
+
+
+     after centering 
+
+             ctrl sample_id    count       50%       std
+    0   negative    glut_1    205.0 -0.684462  0.304968
+    1   negative    glut_2    207.0 -0.580959  0.258853
+    2   negative    glut_3    205.0 -0.574380  0.298338
+    3   positive    glut_1    127.0  0.411562  0.207915
+    4   positive    glut_2    127.0  0.344512  0.202995
+    5   positive    glut_3    127.0  0.357924  0.242676
+    6    shuffle    glut_1    179.0  0.000000  0.367824
+    7    shuffle    glut_2    183.0  0.000000  0.388767
+    8    shuffle    glut_3    178.0  0.000000  0.401547
+    9       test    glut_1  35637.0  0.156352  0.465378
+    10      test    glut_2  35599.0  0.128585  0.424445
+    11      test    glut_3  35317.0  0.151074  0.449810
+    z-score
+    n sequences w/ <3 replicates removed, n= 1141
+    log2ratio_centered
+    n sequences w/ <3 replicates removed, n= 1141
+    (125074, 19) (110168, 19) removed tags w/ <10 barcodes N= 14906
+    gaba 
+
+     before centering 
+
+             ctrl sample_id    count       50%       std
+    0   negative    gaba_1    209.0 -1.518982  0.309172
+    1   negative    gaba_2    210.0 -1.498370  0.328632
+    2   negative    gaba_3    209.0 -1.485085  0.296023
+    3   positive    gaba_1    127.0  0.633998  0.127930
+    4   positive    gaba_2    127.0  0.640488  0.142543
+    5   positive    gaba_3    127.0  0.639488  0.137168
+    6    shuffle    gaba_1    184.0 -0.283298  0.664044
+    7    shuffle    gaba_2    184.0 -0.310470  0.671824
+    8    shuffle    gaba_3    183.0 -0.294778  0.669228
+    9       test    gaba_1  36168.0 -0.065723  0.684488
+    10      test    gaba_2  36229.0 -0.069030  0.679871
+    11      test    gaba_3  36211.0 -0.060113  0.681966
+
+
+     after centering 
+
+             ctrl sample_id    count       50%       std
+    0   negative    gaba_1    209.0 -1.235684  0.309172
+    1   negative    gaba_2    210.0 -1.187900  0.328632
+    2   negative    gaba_3    209.0 -1.190307  0.296023
+    3   positive    gaba_1    127.0  0.917296  0.127930
+    4   positive    gaba_2    127.0  0.950958  0.142543
+    5   positive    gaba_3    127.0  0.934266  0.137168
+    6    shuffle    gaba_1    184.0  0.000000  0.664044
+    7    shuffle    gaba_2    184.0  0.000000  0.671824
+    8    shuffle    gaba_3    183.0  0.000000  0.669228
+    9       test    gaba_1  36168.0  0.217575  0.684488
+    10      test    gaba_2  36229.0  0.241440  0.679871
+    11      test    gaba_3  36211.0  0.234665  0.681966
+    z-score
+    n sequences w/ <3 replicates removed, n= 643
+    log2ratio_centered
+    n sequences w/ <3 replicates removed, n= 643
+    
+# MPRA cell-type activity and cell-type-specific activity. 
+    To call cell-type specific activity, I first called categorical activity for each cell type. A cell type is labeled as "activating" if its mean_log2_centered ratio activity is greater than or equal to the 97.5% quantile of the shuffled distribution activity for that cell type. Similarly, a cell type is labeled "silencing" if its mean_log2_centered ratio is less than the 2.5% of the shuffled distribution. All activity scores within the 95% of the shuffled distribution are labeled "False". After calling categorical activating/silencing within each cell type, I compare labels across cell-types to each other. If the labels are equal, these are not considered differentially active. If the labels are different between gaba and glut, these are differentially active. Of the tiles, 18% (6418/35371) are differentially active, while 88% (28953/35371 tiles) show no difference in activity. There are N=668 tiles active in GABA cells, but not active in GLUT. These are likely GABA-specific activating elements. There are N=682 tiles that are activating in both GABA and GLUT. These are likely commonly active elements. There are N=326 silencing elements in GABA. These may be GABA-specific silencing elements. There is N=1 element that is silencing in GABA and activating in GLUT. This is an interesting observation and may be a switch-like element, suppressive in GABA and activating in GLUT. We should follow up on this. There are 293 elements that are silencing in both GABA and GLUT. These are likely commonly silencing elements shared in GABA and GLUT. There are N=27978 tiles that have not activity in both cell types. 
+
+        gaba        glut      
+    False       False         27978
+                activating     5184
+                silencing       239
+    activating  False           668
+                activating      682
+    silencing   False           326
+                activating        1
+                silencing       293

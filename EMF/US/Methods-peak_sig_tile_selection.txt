@@ -1,0 +1,26 @@
+# 20231101
+# sarahfong
+
+Method: Calling significantly different peak activities. 
+
+My goal is to identify ultrasound-sensitive peaks from a tiled MPRA library tested in two cell lines: HepG2 and BJ. For each cell line, I first computed the log2 (RNA/DNA) activity score. 
+
+# Peak identification
+To identify peaks from contiguous tiles, I collected all tile coordinates from the ultrasound library .fasta file, which contained sequences and sequence names, but did not contain adaptor sequences. I removed any shuffled elements and elements in hg19, then merged tile coordinates that overlapped by >=1 base pair. The resulted in N = 11395 peaks. I then added the peak annotations to the MPRA data per cell line. BJ MPRA has N=58333 tile activity measurements, while HepG2 has N=58617 tile activity measurements. Using one cell line's MPRA dataset, I first merged the peak information with the tile activity information. 
+
+# Peak significance testing using repeated measures strategy. 
+Per peak, I computed the peak-wise activity difference significance using a repeated-measures t-test (See https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.ttest_rel.html). This repeated-measures T-test treats overlapping MPRA tiles as repeated measures of a single peak, and the null hypothesis assumes that the control and ultrasound-treated peak will have the same expected value of MPRA activity. For each peak, I compared the vector of all control replicate log2 MPRA activity tile measures with the vector of all ultrasound-treated replicate log2 MPRA activity tile measures. For example, if one peak has two tiles, then there would be six control and six ultrasound MPRA activity tile measures (2 tiles x 3 replicates x 2 conditions [ctrl | US]). 
+
+# Categorically labeling active tiles using the shuffled tile distribution
+We categorically label tiles "active" if their median activity value is greater than the 97.5% of shuffled tile activity distribution (which is computed as the median value across 3 shuffle tile replicates in either control or ultrasound-exposed treatments) or less than 2.5% of shuffled tile activity distribution. We labeled active tiles separately for control and ultrasound-exposed tiles with control or ultrasound-exposed shuffled tiles distributions, assuming that the shuffled distributions represent true baseline activity across exposures. Theoretically, tiles that exceed 97.5% of shuffled elements could be considered directionally positive or "activating" elements, while tiles smaller than 2.5% of shuffled elements could be considered directionally negative or "silencing" elements. 
+
+# Filtering to nominate tiles from peaks with significantly different activity
+I selected tiles to follow up for validation testing based on the following criteria: (1) control and ultrasound-exposed peak MPRA activity had to be statistically significantly different (ttest_rel p<0.05) (2) control and ultrasound-exposed tiles had to be categorically different for activity. For example, if a significant peak contained a tile that had categorically no activity in the BJ MPRA, 178 tiles were nominated using the criteria above. For the HepG2 MPRA, 174 tiles were nominated using the criteria above. For the category "US.OFF", this means that ultrasound exposure significantly increased the silencing of a sequence, while the category "US.ON" means that ultrasound exposure significantly increased the activity of a sequence. Categories "US.MORE.OFF" means ultrasound significantly increased silencing and the control's activity was insignificantly negative and "US.MORE.ON" means ultrasound significantly increased activity and the control's activity was insignificantly positive. 
+
+# a note on using transformed v. non-transformed score for calling peak-specific significant activity:
+    In BJ:
+        - 131 tiles have same  between transformed and untransformed scores. A criteria to be a tile in this comparison is a tile that is within a peak significance + categorical activity difference in ctrl v. US exposed
+        - This is 131/197 tiles' standard scale activity ratios 
+        - and 131/178 tiles' non-scaled activity ratios
+        
+    Conclusion: standardizing the scores for each replicate takes into account replicate differences in variation when calling activity and can identify more significantly different tile candidates (197 v. 178) that are LIPUS sensitive. 
