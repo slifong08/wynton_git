@@ -5,59 +5,34 @@ if [ -f ~/.bashrc ]; then
 	. ~/.bashrc
 fi
 
-# load anaconda
-if [[ -n "$MODULEPATH" ]]
-then
-    module load Sali
-    #module load CBI miniconda3-py39/4.12.0
-    module load CBI miniconda3/23.3.1-0-py39
-
-fi
 # User specific environment and startup programs
 
-PATH=$PATH:$HOME/.local/bin:$HOME/bin
-export PATH
+#ml load CBI emacs/29.1 miniconda3/23.5.2-0-py311
 
-# python sarah custom tools path
-PYTHONPATH=$PYTHONPATH:$PWD/tools/py_
-export PYTHONPATH
 
-#python sarah custom tools genome
-PYTHONPATH=$PYTHONPATH:$HOME/tools/genome
-export PYTHONPATH
+# gpu
+alias cuda="ml load cuda/11.5"
+alias torch="conda activate torch"
 
-# pytho sarah custom tools evo 
-PYTHONPATH=$PYTHONPATH:$HOME/tools/evo
-export PYTHONPATH
-
-# JAVA v 17
-JAVA_HOME=/wynton/home/ahituv/fongsl/bin/lib/jvm/jdk-17.0.6
-export JAVA_HOME
-
-# UCSC tools
-export PATH=$PATH:$HOME/bin/ucsc_exe
-
-# memesuite
-export PATH=/wynton/group/ahituv/bin/meme-5.5.1/src/:/wynton/home/ahituv/fongsl/meme/libexec/meme-5.5.1:$PATH
-
-# argtable
-export PATH=$PATH:$HOME/bin/argtable2
-
-# github cli
-export GH_HOST='slifong08'
+# working virtual env
+alias env="conda activate mamba"
 
 
 # tunneling from wynton - alias
-alias 'nb1'="jupyter notebook --no-browser --ip='*' --port=7778"
-alias 'nb2'="jupyter notebook --no-browser --ip='*' --port=7779"
+alias 'nb1'="python3 -m notebook --no-browser --ip='*' --port=7778"
+alias 'nb2'="python3 -m notebook --no-browser --ip='*' --port=7779"
 
 # tunnel from wynton - command
-function tnl { jupyter notebook --no-browser --ip='*' --port=$1; }
+function tnl { python3 -m notebook --no-browser --ip='*' --port=$1; }
 export -f tnl
 
 # set up a new project folder
-function project_setup { python ./tools/py_/setup_new_project.py $1; }
+function project_setup { python $HOME/tools/py_/setup_new_project.py $1; }
 export -f project_setup
+
+# install new ipython kernels
+function kernel_install { python3 -m ipykernel install --user --name $1 --display-name $1; }
+export -f kernel_install
 
 # environments
 alias env="source activate mamba"
@@ -68,6 +43,7 @@ alias fsl="cd $HOME"
 alias dev2="ssh dev2.wynton.ucsf.edu"
 alias temp='cd $TMPDIR'
 alias scratch='cd /scratch/fongsl/'
+alias mamba='micromamba'
 
 # shared resources dirs
 alias group="cd /wynton/group/ahituv"
@@ -83,18 +59,26 @@ alias trash="rrm -r /wynton/scratch/fongsl/Trash/"
 alias lock="cd $HOME/nullomers/data/lock"
 alias dna="cd $HOME/dna/"
 alias us='cd $HOME/EMF/US'
-
+alias usml='cd $HOME/EMF/US/ml_emf/bin/human_legnet'
 # box downloads
 alias box='lftp --user sarah.fong@ucsf.edu ftps://ftp.box.com'
 
-# GPU modules
-alias cuda='module load cuda/11.5'
-alias torch='conda activate torch'
+# bash/python conventions
+alias python="python3"
+alias run="."
 
-# sequence alignment toolkit
-alias sequencing='ml load bcftools/1.18 bcl2fastq/2.20.0 bowtie/1.3.1 bowtie2/2.5.1 bwa/0.7.17 hisat2/2.2.0'
+# python paths
+# sarah custom tools path
+PYTHONPATH=$PYTHONPATH:$PWD/tools/py_
+export PYTHONPATH
 
-# ncbi toolkit
-alias ncbi='ml load sratoolkit/3.0.0 blast/2.14.0 blast+/2.12.0 blat/37x1'
-alias nb="bash ./nb.sh"
-alias nb="env | bash ./nb.sh"
+# sarah custom tools genome
+PYTHONPATH=$PYTHONPATH:$HOME/tools/genome
+export PYTHONPATH
+
+# sarah custom tools evo 
+PYTHONPATH=$PYTHONPATH:$HOME/tools/evo
+export PYTHONPATH
+
+# export local path
+export PATH=$PATH:/wynton/home/ahituv/fongsl/.local/bin
