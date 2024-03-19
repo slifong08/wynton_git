@@ -37,6 +37,7 @@ export -f kernel_install
 # environments
 alias env="source activate mamba"
 alias sei="source activate sei"
+alias legnet="mamba activate legnet_torch"
 
 # wynton short-cuts
 alias fsl="cd $HOME"
