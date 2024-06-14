@@ -1,0 +1,62 @@
+#!/bin/bash           # the shell language when run outside of the job scheduler
+#                     # lines starting with #$ is an instruction to the job scheduler
+#$ -S /bin/bash       # the shell language when run via the job scheduler [IMPORTANT]
+#$ -cwd               # job should run in the current working directory
+#$ -j y               # STDERR and STDOUT should be joined
+#$ -l mem_free=12G     # job requires up to 1 GiB of RAM per slot
+#$ -l scratch=12G      # job requires up to 2 GiB of local /scratch space
+#$ -l h_rt=04:00:00   # job requires up to 24 hours of runtime
+
+#$ -r y               # if job crashes, it should be restarted
+#$ -m ae              # alerts to mail about
+#$ -M sarah.fong@ucsf.edu # email to mail to
+#$ -e /wynton/home/ahituv/fongsl/qsub/log/"$JOB_ID".error.txt
+#$ -o /wynton/home/ahituv/fongsl/qsub/log/"$JOB_ID".output.txt
+
+
+echo date
+echo hostname
+
+# add miniconda from bin
+echo init miniconda3 from /wynton/group/ahituv/bin/
+/wynton/group/ahituv/bin/miniconda3/bin/conda init bash
+
+# source the miniconda from local directory
+echo sourcing miniconda3 from $home/.bashrc
+source $HOME/.bashrc
+
+
+# activate virtual environment
+echo activate virtual environment
+conda activate $HOME/.conda/envs/MPRAflow #
+
+export NXF_CONDA_CACHEDIR=/wynton/group/ahituv/fongsl/src/MPRAflow/work/conda
+
+# add symlink because nextflow is a piece of work
+echo add symlink for miniconda activate
+ln -s /wynton/group/ahituv/bin/miniconda3/bin/activate $HOME/.conda/envs/MPRAflow/bin/activate
+
+# go to directory
+
+echo change dir
+cd /wynton/group/ahituv/fongsl/src/MPRAflow/  
+
+
+# the nextflow count command
+echo count.nf
+nextflow run count.nf \
+        --dir $1 \
+        --e  $2 \
+        --design $3 \
+        --association $4 \
+        --bc-length $5 \
+        --thresh $6 \
+        --name $7 
+
+'''nextflow run count.nf --dir /wynton/group/ahituv/fongsl/projects/CRISPR_nullomer_MPRA/data/20240430_MPRA_sequencing/test --e /wynton/group/ahituv/fongsl/projects/CRISPR_nullomer_MPRA/data/20240430_MPRA_sequencing/test/experiment.csv --design /wynton/group/ahituv/fongsl/projects/CRISPR_nullomer_MPRA/data/library/15mer.fo.pam.scaffold.ext200.library.TWIST.fa --association /wynton/group/ahituv/fongsl/projects/CRISPR_nullomer_MPRA/data/20230815_nullomer_MPRA_assoc/MPRAflow_results/null_mpra_filtered_coords_to_barcodes.pickle --bc-length 15 --thresh 1 --name null_mpra
+'''
+
+
+## End-of-job summary, if running as a job
+[[ -n "$JOB_ID" ]] && qstat -j "$JOB_ID"  # This is useful for debugging and usage purposes,
+                                          # e.g. "did my job exceed its memory request?"

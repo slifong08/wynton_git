@@ -5,7 +5,7 @@
 #$ -j y               # STDERR and STDOUT should be joined
 #$ -l h_vmem=30G     # job requires up to 1 GiB of RAM per slot
 #$ -l scratch=20G      # job requires up to 2 GiB of local /scratch space
-#$ -l h_rt=00:30:00   # job requires up to 24 hours of runtime
+#$ -l h_rt=02:30:00   # job requires up to 24 hours of runtime
 ##$ -t 1-10           # array job with 10 tasks (remove first '#' to enable)
 #$ -r y               # if job crashes, it should be restarted
 #$ -m ae              # alerts to mail about
@@ -29,9 +29,10 @@ cd /wynton/home/ahituv/fongsl/EMF/US/ml_emf/bin/classifier
 echo training dataset: $1
 echo dir: $2
 echo prediction task: $3
+echo standard scale outputs: $4
 
 
-python ./deepstarr.py $1 $2 $3 $4 $5
+python ./deepstarr.py $1 $2 $3 $4
 
 # 1 = prefix
 # 2 = data_path
